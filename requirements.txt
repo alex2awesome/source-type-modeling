@@ -1,0 +1,10 @@
+jsonlines
+torch
+transformers
+evaluate
+scipy
+scikit-learn
+accelerate
+wandb
+protobuf==3.20.0
+sentencepiece
