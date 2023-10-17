@@ -1,0 +1,869 @@
+<!-- YOUR HTML BEGINS -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+</head>
+<link type="text/css" href="https://getbootstrap.com/1.0.0/assets/css/bootstrap-1.0.0.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://creativecouple.github.io/jquery-timing/jquery-timing.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<!-- ContextMenu -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+
+<!-- alertify -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/alertify.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/alertify.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/bootstrap.min.css">
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/AlertifyJS/1.13.1/css/themes/default.css"> -->
+
+<script src="https://cdn.jsdelivr.net/gh/qiao/difflib.js/dist/difflib-browser.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/musclesoft/jquery-connections/jquery.connections.js"></script>
+
+<style>
+    .hidden {
+    transition: opacity 1s ease-out;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.example{
+    background-color: #efefef;
+    margin-left: 20px;
+    margin-right: 50px;
+    padding: 10px;
+    padding-bottom: 1px;
+}
+
+.highlighted {
+	background-color: yellow;
+}
+
+.text-mouseover{
+	border-style: solid;
+}
+
+#moving_div {
+	position: fixed;
+	width: 1px;
+	height: 1px;
+	z-index: -1;
+}
+.moving_line {
+	z-index: -1;
+}
+
+/* Handle the question text-boxes */
+.textblock {
+  border-radius: 4px;
+  background: rgba(237, 245, 241, 0.87);
+  display: inline-block;
+  border: 2px solid Black;
+  padding: 5px 10px 5px 10px;
+  margin: 10px 10px 10px 10px;
+  z-index: 1;
+}
+
+
+.textblock_pool {
+	height: 200px;
+}
+
+.textblock_span {
+	padding-right: 10px;
+}
+
+.subset-subj {
+	background: rgba(175, 255, 141, 0.6);
+	background-color: rgba(175, 255, 141, 0.6);
+}
+
+/* handle line styles*/
+.connection {
+	border: 8px double;
+    /*border-width: 2.5px;*/
+	z-index: 0;
+	/*display: table;*/
+	border-radius: 100%;
+	/*pointer-events:none;*/
+	color: rgb(200, 200, 200);
+	color: rgba(0, 0, 0, 0.7);
+}
+
+.shaded {
+	border-color: #55f;
+    /*border-radius: 20px;*/
+    /*border-width: 5px;*/
+}
+
+.dropdown-menu {
+    position: absolute;
+    z-index: 100;
+}
+
+
+.deleted{
+    background-color:rgba(241,114,114,0.68)
+}
+
+.added{
+    background-color:rgba(175, 255, 141, 0.6);
+}
+
+.annotation{
+    height: 50%;
+}
+
+#submitButton{
+    z-index: 5;
+}
+
+#feedback{
+    width: 100%;
+}
+
+hr.hr-medium{
+    border: 3px solid black;
+}
+
+body{
+    margin: 10px !important;
+}
+
+/* arrows */
+.arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  position: relative;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+</style>
+<!-- jquery connections -->
+<body>
+
+
+<form name='mturk_form' method='post' id='mturk_form' action='/mturk/externalSubmit'>
+<input type='hidden' value='' name='assignmentId' id='assignmentId'/>
+
+<div class="table table-hover container">
+    <p>Article Key: ('nyt', 548087, 2, 3)</p>
+    <br>
+    <div class="row header">
+        <div class="col-5"><h4>Old Version</h4></div>
+        <div class="col-2"></div>
+        <div class="col-5"><h4>New Version</h4></div>
+    </div>
+    <div class="row text" >
+        <div class="col-4 textblock_pool_version_x" doc_id="('nyt', 548087, 2, 3)" ></div>
+        <div class="col-1 filler" doc_id="('nyt', 548087, 2, 3)" ></div>
+        <div class="col-4 textblock_pool_version_y" doc_id="('nyt', 548087, 2, 3)" ></div>
+    </div>
+
+<script language='Javascript'>
+
+    function get_word_diff_ratio(s_old, s_new) {
+        var s_old_words = s_old.split(' ')
+        var s_new_words = s_new.split(' ')
+        var s = new difflib.SequenceMatcher(null, s_old_words, s_new_words)
+        return s.ratio()
+    }
+
+    function get_list_diff(l_old, l_new){
+        var vars_old = []
+        var vars_new = []
+        var diffs = difflib.ndiff(l_old, l_new)
+        var in_question = false
+        diffs.forEach(function(item, idx){
+            var label = item[0]
+            var text = item.slice(2)
+            if (label == '?'){
+                return
+            }
+
+            else if (label == '-'){
+                vars_old.push({
+                    'text': text,
+                    'tag': '-'
+                })
+                if (
+                        // if something is removed from the old sentence, a '?' will be present in the next idx
+                        ((idx < diffs.length - 1) && (diffs[idx + 1][0] == '?'))
+                        // if NOTHING is removed from the old sentence, a '?' might still be present in 2 idxs, unless the next sentence is a - as well.
+                     || ((idx < diffs.length - 2) && (diffs[idx + 2][0] == '?') && (diffs[idx + 1][0] != '-'))
+                ){
+                    in_question = true
+                    return
+                }
+                // test if the sentences are substantially similar, but for some reason ndiff marked them as different.
+                if ((idx < (diffs.length - 1)) && (diffs[idx + 1][0] == '+')){
+                    var text_new = diffs[idx + 1].slice(2)
+                    if (get_word_diff_ratio(text, text_new) > .8) {
+                        in_question = true
+                        return
+                    }
+                }
+                vars_new.push({
+                    'text': '',
+                    'tag': ' '
+                })
+            }
+            else if (label == '+'){
+                vars_new.push({
+                    'text': text,
+                    'tag': '+'
+                })
+                if (in_question){
+                    in_question = false
+                }
+                else{
+                    vars_old.push({
+                        'text':'',
+                        'tag': ' '
+                    })
+                }
+            }
+            else {
+                vars_old.push({
+                    'text': text,
+                    'tag': ' '
+                })
+                vars_new.push({
+                    'text': text,
+                    'tag': ' '
+                })
+            }
+        })
+        return [vars_old, vars_new]
+    }
+
+    function get_word_diffs(s_old, s_new) {
+        var s_old_words = s_old.split(' ')
+        var s_new_words = s_new.split(' ')
+        return get_list_diff(s_old_words, s_new_words)
+    }
+
+    function html_compare_sentences(old_sent, new_sent) {
+        var sents = get_word_diffs(old_sent, new_sent)
+        old_sent = sents[0]
+        new_sent = sents[1]
+        var new_html = []
+        var old_html = []
+        var max_idx = Math.max(old_sent.length, new_sent.length)
+        for (var idx = 0; idx < max_idx; idx++) {
+            var w_old = old_sent[idx]
+            var w_new = new_sent[idx]
+            if (w_old['tag'] == '-') {
+                old_html.push('<span class="deleted">' + w_old['text'] + '</span>')
+            } else {
+                old_html.push(w_old['text'])
+            }
+            if (w_new['tag'] == '+') {
+                new_html.push('<span class="added">' + w_new['text'] + ' </span>')
+            } else {
+                new_html.push(w_new['text'])
+            }
+        }
+        return [old_html.join(' '), new_html.join(' ')]
+    }
+
+    textblockpool_class_mapper= {
+        'x': '.textblock_pool_version_x',
+        'y': '.textblock_pool_version_y'
+    }
+
+    $('#otherbutton').on('click', function(d){
+        $('#otherform').removeClass('hidden')
+    })
+
+    $('#otherform').on('click', function(d){
+        $('#error_btn_grp').find('label').removeClass('active')
+        $('#otherbutton').addClass('active')
+    })
+
+    $('#otherbutton2').on('click', function(d){
+        $('#otherform2').removeClass('hidden')
+    })
+
+    $('#otherform2').on('click', function(d){
+        $('#law_type_btn_grp').find('label').removeClass('active')
+        $('#otherbutton2').addClass('active')
+    })
+
+    var window_height = $( window ).height();
+    String.prototype.replaceAll = function(search, replacement) {
+        var target = this;
+        return target.replace(new RegExp(search, 'g'), replacement);
+    };
+    String.prototype.toTitleCase = function() {
+        var target = this;
+        return target.replace(/(?:^|\s)\w/g, function(match) {
+            return match.toUpperCase();
+        });
+    };
+    Array.prototype.remove_duplicates = function() {
+        var arr = this;
+        let s = new Set(arr);
+        let it = s.values();
+        return Array.from(it);
+    };
+
+    Array.prototype.remove_by_value = function(val) {
+      for (var i = 0; i < this.length; i++) {
+        if (this[i] === val) {
+          this.splice(i, 1);
+          i = i - 1;
+        }
+      }
+      return this;
+    };
+
+    (function(old) {
+      $.fn.attr = function() {
+        if(arguments.length === 0) {
+          if(this.length === 0) {
+            return null;
+          }
+
+          var obj = {};
+          $.each(this[0].attributes, function() {
+            if(this.specified) {
+              obj[this.name] = this.value;
+            }
+          });
+          return obj;
+        }
+
+        return old.apply(this, arguments);
+      };
+    })($.fn.attr);
+
+    function get_arcs(textblock_selector){
+        var attrs = $(textblock_selector).attr()
+        var arc_attrs = Object.keys(attrs).filter(function(d){return d.indexOf('arc') != -1})
+        var line_ids = arc_attrs.map(function(d){ return attrs[d]})
+        return line_ids
+            .filter(function(d) {return $('.' + d).length != 0 } )
+            .sort(function(d1, d2){ return d1.split('-')[1] - d2.split('-')[1]})
+    }
+
+     function connection_mouseover(){
+        // var left = $(this).attr('left')
+        // var right = $(this).attr('right')
+        // var new_html_x = $(this).attr('hidden-html-left')
+        // var new_html_y = $(this).attr('hidden-html-right')
+        // update
+        $(this).addClass('shaded')
+        $('#' + left).addClass('shaded')//.html(new_html_x)
+        $('#' + right).addClass('shaded')//.html(new_html_y)
+    }
+
+    function connection_mouseout(){
+        // var left = $(this).attr('left')
+        // var right = $(this).attr('right')
+        // var old_html_x = $('#' + left).attr('orig-html')
+        // var old_html_y = $('#' + right).attr('orig-html')
+        // update
+        $(this).removeClass('shaded')
+        $('#' + left).removeClass('shaded')//.html(old_html_x)
+        $('#' + right).removeClass('shaded')//.html(old_html_y)
+    }
+
+    // page handling
+    class PageManager {
+	constructor(
+	    textblock_dim,
+        demo,
+        check,
+        doc_key,
+        dropdown_buttons,
+        dropdown_arcs,
+        textblock_pool_min
+	) {
+		this.demo = demo
+		this.check = check
+		this.doc_key = doc_key
+		// dropdown buttons
+		this.dropdown_buttons = dropdown_buttons
+		this.dropdown_arcs = dropdown_arcs
+		// dimensions for textblock divs
+		this.textblock_pool_min = textblock_pool_min
+		this.textblock_dim = textblock_dim;
+		this.start_line_id = null
+		// z-index for dropdown needs to increase every click :/ maybe not the best implementation
+		this.curr_dropdown_zindex = 3
+	}
+
+	_get_new_connection_idx(){
+	    return $('.connection').length
+    }
+
+	_update_node_data_with_new_connection(textblock_x_selector, textblock_y_selector, line_selector){
+        // compare diff text for blocks directly connected by a line.
+        var x_arcs = get_arcs('#' + textblock_x_selector)
+        var y_arcs = get_arcs('#' + textblock_y_selector)
+        var x_arc_index = x_arcs.length + 1;
+        var y_arc_index = y_arcs.length + 1;
+        var text_x = $('#' + textblock_x_selector).attr('orig-text')
+        var text_y = $('#' + textblock_y_selector).attr('orig-text')
+        var htmls = html_compare_sentences(text_x, text_y)
+        var diff_ratio = get_word_diff_ratio(text_x, text_y)
+        var html_x = htmls[0]
+        var html_y = htmls[1]
+        $('.' + line_selector)
+				.attr('left', textblock_x_selector)
+				.attr('right', textblock_y_selector)
+				.attr('doc_id', this.doc_key)
+                .attr('hidden-html-left', html_x)
+                .attr('hidden-html-right', html_y)
+                .attr('word-diff-ratio', diff_ratio)
+
+        // update diff text for all lines leading into a node
+        $('#' + textblock_x_selector).attr('arc-' + x_arc_index, line_selector)
+        var x_arcs_new = get_arcs('#' + textblock_x_selector)
+        x_arcs_new = x_arcs_new
+            .sort(function( d1, d2) { return $('.' + d1).attr('right').split('-')[2] - $('.' + d2).attr('right').split('-')[2]})
+        var all_y_text_leading_to_x = []
+        x_arcs_new.forEach(function(d){
+            var node = $('.' + d)
+            var y_text = $('#' + node.attr('right')).attr('orig-text')
+            all_y_text_leading_to_x.push(y_text)
+        })
+        htmls = html_compare_sentences(text_x, all_y_text_leading_to_x.join(' '))
+        var x_html_all = htmls[0]
+        // $('#' + textblock_x_selector).attr('html-all', x_html_all)
+        $('#' + textblock_x_selector).html(x_html_all)
+
+
+        $('#' + textblock_y_selector).attr('arc-' + y_arc_index, line_selector)
+        var y_arcs_new = get_arcs('#' + textblock_y_selector)
+        y_arcs_new = y_arcs_new
+            .sort(function( d1, d2) { return $('.' + d1).attr('left').split('-')[2] - $('.' + d2).attr('left').split('-')[2]})
+        var all_x_text_leading_to_y = []
+        y_arcs_new.forEach(function(d){
+            var node = $('.' + d)
+            var x_text = $('#' + node.attr('left')).attr('orig-text')
+            all_x_text_leading_to_y.push(x_text)
+        })
+        htmls = html_compare_sentences(all_x_text_leading_to_y.join(' '), text_y)
+        var y_html_all = htmls[1]
+        // $('#' + textblock_y_selector).attr('html-all', y_html_all)
+        $('#' + textblock_y_selector).html(y_html_all)
+    }
+
+    // create a connection from input data (to re-create datapoints)
+    create_static_connection(left_textblock, right_textblock){
+    	var line_selector = 'line-' + this._get_new_connection_idx()
+        var textblock_x_selector = 'sentence-x-' + left_textblock
+        var textblock_y_selector = 'sentence-y-' + right_textblock
+
+        //
+        $('#' + textblock_x_selector).connections({
+			to: '#' + textblock_y_selector,
+			class: 'connection static ' + line_selector
+		})
+
+		// make dropdown
+		// this._make_right_click_line_dropdown(line_selector, textblock_x_selector, textblock_y_selector)
+        this._update_node_data_with_new_connection(textblock_x_selector, textblock_y_selector, line_selector)
+        return line_selector
+    }
+
+    create_textblock(selected_text, version, block_type, block_id){
+    	var that = this
+        // create textblock element for the righthand side
+        var textblock_pool = $(textblockpool_class_mapper[version]).filter(
+            function (d) {
+                return $(d).attr('doc_id') == this.doc_key
+            }
+        )
+        // create textblock div
+        var textblock_row = document.createElement('div')
+        $(textblock_row).addClass('row')
+        //
+        var textblock_div = document.createElement('div')
+        $(textblock_div)
+        	.addClass('textblock')
+        	.attr('doc_id', that.doc_key)
+	       	.attr('id', 'sentence-' + version + '-' + block_id)
+	       	.attr('label', block_type)
+            .attr('orig-text', selected_text)
+            .attr('orig-html', '<span class="textblock_span">' + selected_text + '</span>')
+            .attr('html-all', '<span class="textblock_span">' + selected_text + '</span>')
+
+        var textblock_span = document.createElement('span')
+        $(textblock_span).addClass('textblock_span')
+        textblock_span.textContent = selected_text
+        // append elements to the textblock
+        $(textblock_div).append(textblock_span)
+
+        if (! this.demo){
+            // handle line-drawing
+            $(textblock_div).bind('contextmenu', function(e) {
+    	        e.preventDefault();
+            	// that.handle_connection(this)
+            })
+        }
+
+        // append textblock to the pool of textblocks
+        $(textblock_row).append(textblock_div)
+    	$(textblock_row).appendTo(textblock_pool)
+		$(textblock_div).draggable();
+		// dynamically resize the height of the textblock pool
+        var multiplier = 2
+	    var new_height = d3.sum(
+	        textblock_pool.find('.textblock').map(function(i, d){
+     			return $(d).height() + multiplier * (
+ 	    		    that.textblock_dim.margin + that.textblock_dim.border + that.textblock_dim.padding
+                ) // 2 * (margin + border + padding)
+ 		}))
+       $(textblock_pool).css('height', d3.max([this.textblock_pool_min, new_height]))
+    }
+}
+
+    textblock_dims = {
+		'margin': 5,
+		'border': 2,
+		'padding': 10
+	}
+
+	textblock_pool_min_height = 200
+
+    buttons = [
+		['NODE', 'btn-outline-primary', 'node'],
+    ]
+    arcs = {
+        'NODE': {
+            'NODE': [],
+        }
+    }
+    pm = new PageManager(
+		textblock_dims, false, false,
+		"('nyt', 548087, 2, 3)", buttons, arcs,
+		textblock_pool_min_height
+	)
+
+    var data = JSON.parse('{"arcs": [{"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 22.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 14.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 1.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 17.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 26.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 29.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 10.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 19.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 0.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 5.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 17.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 33.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 33.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 11.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 13.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 12.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": 0.3968576883201262, "avg_sentence_distance_y": 0.3997692475045733, "sent_idx_x": 34.0, "sent_idx_y": 6.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 20.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": 0.4227180929915664, "avg_sentence_distance_y": 0.4222781487100497, "sent_idx_x": 15.0, "sent_idx_y": 32.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 3.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 8.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 26.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 24.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 2.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 24.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 27.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 16.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 10.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 2.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 25.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 23.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 9.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 27.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 15.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 19.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 30.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 23.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": 0.0, "avg_sentence_distance_y": 0.0, "sent_idx_x": 35.0, "sent_idx_y": 7.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 5.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 32.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 29.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 22.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 4.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 16.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 0.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": 0.3207133585318149, "avg_sentence_distance_y": 0.3207133585318149, "sent_idx_x": 7.0, "sent_idx_y": 21.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 28.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 12.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 36.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 31.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 30.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 20.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 28.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 6.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 14.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 4.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 31.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 3.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": NaN, "sent_idx_y": 11.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": 0.10320679913304057, "avg_sentence_distance_y": 0.10320679913304057, "sent_idx_x": 37.0, "sent_idx_y": 34.0, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 21.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 13.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}, {"avg_sentence_distance_x": NaN, "avg_sentence_distance_y": NaN, "sent_idx_x": 18.0, "sent_idx_y": NaN, "version_x": 2, "version_y": 3}], "nodes": [{"sent_idx": 0, "sentence": "KABUL, Afghanistan -- Two American soldiers were shot and killed by a member of the Afghan Army in eastern Afghanistan on Monday when a dispute broke out during a joint American and Afghan patrol, Afghan officials said.", "version": 2}, {"sent_idx": 1, "sentence": "There were unconfirmed reports that the dispute erupted after the convoy was hit by a roadside bomb.", "version": 2}, {"sent_idx": 2, "sentence": "NATO confirmed that two of its soldiers had been killed by a member of the Afghan Army.", "version": 2}, {"sent_idx": 3, "sentence": "In a separate episode in the southeast, attackers killed 10 Afghan soldiers at a checkpoint in Helmand Province early on Monday, in what a provincial spokesman described as the latest attack by insurgents who had infiltrated the Afghan military.", "version": 2}, {"sent_idx": 4, "sentence": "The Taliban, meanwhile, cut the throats of 17 civilians -- including two women -- in a rural, Taliban-controlled district of Helmand on Sunday, Afghan officials said.", "version": 2}, {"sent_idx": 5, "sentence": "The killing of American soldiers in the east, in Laghman Province, brought the number of coalition soldiers shot by Afghan police and military forces so far this year to 42, 12 of them this month alone.", "version": 2}, {"sent_idx": 6, "sentence": "Noor Rahman, a Laghman police official, said the shooting occurred at about 9 a.m. in the Alingar district.", "version": 2}, {"sent_idx": 7, "sentence": "\u0027\u0027A verbal argument erupted and fire was exchanged,\u0027\u0027 he said.", "version": 2}, {"sent_idx": 8, "sentence": "Lt.", "version": 2}, {"sent_idx": 9, "sentence": "Col.", "version": 2}, {"sent_idx": 10, "sentence": "Hagen Messer, a NATO spokesman in Kabul, said that the Afghan soldier was shot and killed in a return of fire and that no other coalition soldiers were wounded.", "version": 2}, {"sent_idx": 11, "sentence": "\u0027\u0027According to our initial operational reporting, a service member of the ANA turned his weapon against ISAF forces, killing two ISAF service members,\u0027\u0027 Colonel Messer said, referring to the Afghan Army and the International Security Assistance Force, the formal name of the NATO-led force.", "version": 2}, {"sent_idx": 12, "sentence": "\u0027\u0027ISAF forces returned fire, killing the attacker.", "version": 2}, {"sent_idx": 13, "sentence": "\u0027\u0027 The shooting of the Afghan soldiers in the south in Helmand Province took place at a checkpoint in the Washir district, according to Dawood Ahmadi, the spokesman for the Helmand governor.", "version": 2}, {"sent_idx": 14, "sentence": "Mr. Ahmadi said five other Afghan soldiers fled the checkpoint.", "version": 2}, {"sent_idx": 15, "sentence": "He described these as insurgents who had infiltrated the Afghan Army and plotted to carry out the attack.", "version": 2}, {"sent_idx": 16, "sentence": "\u0027\u0027The enemy does not have the strength to fight our forces face to face,\u0027\u0027 he said.", "version": 2}, {"sent_idx": 17, "sentence": "\u0027\u0027Therefore, they try to carry out attacks by infiltrating in Afghan forces.", "version": 2}, {"sent_idx": 18, "sentence": "\u0027\u0027 The number of so-called green-on-green, or insider, attacks by Afghan police and military forces on their own troops has risen sharply over the past two years, mirroring a similar increase in attacks by Afghan forces on NATO troops The majority of attacks on Western forces are motivated by outrage or personal disputes, officials say.", "version": 2}, {"sent_idx": 19, "sentence": "But officials blame infiltration by the Taliban for most of the Afghan-on-Afghan attacks.", "version": 2}, {"sent_idx": 20, "sentence": "Early reports were confusing, however.", "version": 2}, {"sent_idx": 21, "sentence": "The Ministry of Defense in Kabul, while confirming the deaths, rejected the characterization of the episode as an insider attack by infiltrators.", "version": 2}, {"sent_idx": 22, "sentence": "A spokesman, Dawlat Waziri, said that a large number of insurgents had attacked the checkpoint, and that there had been a prolonged confrontation, leaving several members of the Taliban dead.", "version": 2}, {"sent_idx": 23, "sentence": "In Helmand, officials said the authorities were investigating the killings of the 17 civilians, which occurred in the Kajaki district.", "version": 2}, {"sent_idx": 24, "sentence": "\u0027\u0027The government does not have access to this area because of the strong Taliban presence,\u0027\u0027 said Mr. Ahmadi, the provincial spokesman.", "version": 2}, {"sent_idx": 25, "sentence": "He vowed that a military operation would be carried out there soon.", "version": 2}, {"sent_idx": 26, "sentence": "He said none of the victims had any ties to the government.", "version": 2}, {"sent_idx": 27, "sentence": "The Afghan Interior Ministry provided a similar account of the killings and called them \u0027\u0027another unforgivable and shameful crime.", "version": 2}, {"sent_idx": 28, "sentence": "\u0027\u0027 The ministry said the attack took place Sunday in the Shah Kariz region of Kajaki when \u0027\u0027armed Taliban opened fire\u0027\u0027 and slit the throats of \u0027\u002717 innocent civilians, including 2 women.", "version": 2}, {"sent_idx": 29, "sentence": "\u0027\u0027 By late Monday morning a disagreement had emerged between local Helmand officials about the killings.", "version": 2}, {"sent_idx": 30, "sentence": "Haji Naimatullah Khan, the governor of the Musa Qala district, which borders Kajaki to the west, said the throat cuttings occurred in Musa Qala, in a village known Roshan Abad.", "version": 2}, {"sent_idx": 31, "sentence": "He confirmed the death toll of 17, but said the men who were killed either did have links to the government or were providing information to the authorities.", "version": 2}, {"sent_idx": 32, "sentence": "Two women were killed, he said, because they had begged the Taliban to spare the lives of the men.", "version": 2}, {"sent_idx": 33, "sentence": "He said he based his account on reports from witnesses and relatives of the victims.", "version": 2}, {"sent_idx": 34, "sentence": "\u0027\u0027Sometimes they provided intelligence information to the government, and the Taliban learned that these are the people who had links with government,\u0027\u0027 Haji Khan said of the victims.", "version": 2}, {"sent_idx": 35, "sentence": "\u0027\u0027They were detained in their homes and taken away.", "version": 2}, {"sent_idx": 36, "sentence": "\u0027\u0027 \u0027\u0027The area is not secure, and there is a heavy presence of Taliban,\u0027\u0027 he said.", "version": 2}, {"sent_idx": 37, "sentence": "Reporting was contributed by Taimoor Shah, Sangar Rahimi and an employee of The New York Times from Kabul, and an employee of The New York Times from Helmand Province.", "version": 2}, {"sent_idx": 0, "sentence": "KABUL, Afghanistan -- When the killing ended in northeast Helmand Province on Sunday, the only thing Afghan officials knew for certain was that the beheaded bodies of 15 men and 2 women lay in the desert, in Taliban territory, after a startling spasm of brutality.", "version": 3}, {"sent_idx": 1, "sentence": "The question now dogging them is why.", "version": 3}, {"sent_idx": 2, "sentence": "Government officials scrambled for more than a day to explain the carnage.", "version": 3}, {"sent_idx": 3, "sentence": "Hajji Naimatullah Khan, the governor of the Musa Qala district, initially reported that the Taliban had executed the 17 for attending a risque party.", "version": 3}, {"sent_idx": 4, "sentence": "But in a telephone interview he later revised his account, saying that witnesses believed the men had been identified as informers and dragged away from villages in his district.", "version": 3}, {"sent_idx": 5, "sentence": "The two women, he added, had pleaded for the men\u0027s lives, but this angered the Taliban, who killed them, too.", "version": 3}, {"sent_idx": 6, "sentence": "\u0027\u0027The Taliban learned that these are the people who had links with government,\u0027\u0027 Hajji Khan said of the victims.", "version": 3}, {"sent_idx": 7, "sentence": "\u0027\u0027They were detained in their homes and taken away.", "version": 3}, {"sent_idx": 8, "sentence": "\u0027\u0027 Musa Qala and the nearby district of Kajaki, where the bodies were reported found, are both longtime Taliban strongholds and scenes of heavy fighting with American and British troops over the years.", "version": 3}, {"sent_idx": 9, "sentence": "The lasting Taliban presence has long marginalized government officials there, perhaps explaining the incoherent array of explanations for the beheadings.", "version": 3}, {"sent_idx": 10, "sentence": "The Helmand governor\u0027s office offered differing theories as well.", "version": 3}, {"sent_idx": 11, "sentence": "It first released a statement suggesting that the two Taliban commanders had gotten into a fight over the two women that spiraled into a wider gun battle.", "version": 3}, {"sent_idx": 12, "sentence": "Then the governor\u0027s spokesman, Dawood Ahmadi, speculated that the victims might have been suspected of planning an anti-Taliban uprising.", "version": 3}, {"sent_idx": 13, "sentence": "But that was only a very hopeful hypothesis, he admitted.", "version": 3}, {"sent_idx": 14, "sentence": "Unusually, spokesmen for the Taliban, who are quick to text local journalists with news of their actions, were either silent or denied knowledge of the killings.", "version": 3}, {"sent_idx": 15, "sentence": "If authoritative details were hard to come by, the attack drew many condemnations.", "version": 3}, {"sent_idx": 16, "sentence": "President Hamid Karzai described the beheadings as a combination of mass murder, apostasy and hooliganism.", "version": 3}, {"sent_idx": 17, "sentence": "The American Embassy in Kabul said the 17 victims had been shot and beheaded in a \u0027\u0027shameful act.", "version": 3}, {"sent_idx": 18, "sentence": "\u0027\u0027 And Gen.", "version": 3}, {"sent_idx": 19, "sentence": "John R. Allen, commander of American and NATO troops here, called the killers \u0027\u0027cowards\u0027\u0027 and predicted that the attack might help persuade villagers to rise up.", "version": 3}, {"sent_idx": 20, "sentence": "A surge of so-called insider attacks against United States troops continued on Monday, when an Afghan National Army soldier gunned down two Americans after a dispute broke out in Laghman Province, a restive and rugged part of eastern Afghanistan that no longer has much American presence, Afghan officials said.", "version": 3}, {"sent_idx": 21, "sentence": "\u0027\u0027A verbal argument erupted and fire was exchanged,\u0027\u0027 said Noor Rahman, a Laghman police official.", "version": 3}, {"sent_idx": 22, "sentence": "That brought the American death toll in such violence, also known as green-on-blue attacks, to 12 in the past three weeks, in a continuing crisis that is shaking trust between American military personnel and the Afghan forces they are training and working beside until the 2014 NATO military withdrawal.", "version": 3}, {"sent_idx": 23, "sentence": "One-third of all American fatalities in August have now come at the hands of Afghan soldiers, policemen or other Afghans working close to American forces.", "version": 3}, {"sent_idx": 24, "sentence": "Forty-two American and NATO soldiers have been slain by insider attacks in the first eight months of this year.", "version": 3}, {"sent_idx": 25, "sentence": "Though Afghan officials identified the victims in Laghman as American soldiers, the American-led international military command would not confirm their nationalities.", "version": 3}, {"sent_idx": 26, "sentence": "But a Western official provided an account of the attack: It began, he said, when a NATO convoy hit a roadside bomb.", "version": 3}, {"sent_idx": 27, "sentence": "The blast did not injure anyone, but it damaged a vehicle, forcing the convoy to stop.", "version": 3}, {"sent_idx": 28, "sentence": "Then a separate Afghan patrol crossed paths with the broken-down convoy, the official said, and that was when the shooting happened.", "version": 3}, {"sent_idx": 29, "sentence": "The gunman was killed in a firefight.", "version": 3}, {"sent_idx": 30, "sentence": "For a while on Monday it also appeared that a similar attack -- Afghan soldiers killing their colleagues -- had occurred in Helmand in Washir District, near Nimroz and Farah Provinces.", "version": 3}, {"sent_idx": 31, "sentence": "There, Taliban attackers killed 10 Afghan National Army soldiers during an ambush at a checkpoint in an hourlong firefight that also left 4 soldiers wounded and 11 Taliban fighters dead.", "version": 3}, {"sent_idx": 32, "sentence": "Initially, the Helmand governor\u0027s office said some insurgents had infiltrated the Afghan ranks and plotted to help the attack.", "version": 3}, {"sent_idx": 33, "sentence": "But the office later revised its account, saying five soldiers had fled during the firefight -- cowards, a spokesman suggested, but not infiltrators -- and that they were being investigated.", "version": 3}, {"sent_idx": 34, "sentence": "Reporting was contributed by Graham Bowley, Sangar Rahimi and an employee of The New York Times from Kabul, and an employee of The New York Times from Helmand Province.", "version": 3}]}'.replaceAll('NaN', 'null'))
+    var versions = data['nodes'].map(function(d){return d['version']})
+    var x_vers = d3.min(versions)
+    var y_vers = d3.max(versions)
+    var x_versions = []
+    var y_versions = []
+    $(data.nodes).each(function (i, d) {
+       if(d.version == x_vers) {
+           pm.create_textblock(d.sentence, 'x', 'NODE', d.sent_idx)
+           x_versions.push(d.sent_idx)
+       } else {
+           pm.create_textblock(d.sentence, 'y', 'NODE', d.sent_idx)
+           y_versions.push(d.sent_idx)
+       }
+    })
+
+    $(data.arcs).each( function(i, d){
+        if ((d.sent_idx_x != null ) && (d.sent_idx_y != null)){
+            var sel = pm.create_static_connection(d.sent_idx_x, d.sent_idx_y, null)
+            d.line_selector = sel
+            x_versions.remove_by_value(d.sent_idx_x)
+            y_versions.remove_by_value(d.sent_idx_y)
+        }
+        // sentence is added (exists in y)
+        if (d.sent_idx_x == null){
+            var textblock_sel = '#sentence-y-' + d.sent_idx_y
+            $(textblock_sel).addClass('added')
+            y_versions.remove_by_value(d.sent_idx_y)
+        }
+        // sentence is removed (exists in x)
+        if (d.sent_idx_y == null){
+            var textblock_sel = '#sentence-x-' + d.sent_idx_x
+            $(textblock_sel).addClass('deleted')
+            x_versions.remove_by_value(d.sent_idx_x)
+        }
+    })
+    $(x_versions).each(function(i, d){
+        $('#sentence-x-' + d).addClass('deleted')
+    })
+    $(y_versions).each(function(i, d){
+        $('#sentence-y-' + d).addClass('added')
+    })
+
+
+
+
+     // make lines follow the main
+     $.repeat().add('connection').each($).connections('update').wait(0);
+
+     // handle floating div
+     var $mouseX = 0, $mouseY = 0;
+     var $xp = 0, $yp =0;
+     $(document).mousemove(function(e){
+         $mouseX = e.pageX;
+         $mouseY = e.pageY - window.scrollY;
+     });
+
+     // handle updating lines on draggable
+     var $loop = setInterval(function(){
+       $xp += (($mouseX - $xp)/2);
+       $yp += (($mouseY - $yp)/2);
+       $("#moving_div").css({left:$xp +'px', top:$yp +'px'});
+     }, 30);
+
+
+    // make mouseover highlights for connections and textblocks
+    $('.connection')
+        .on('mouseover', connection_mouseover)
+        .on('mouseout', connection_mouseout)
+
+    $('.textblock')
+        .on('mouseover', function(){
+            var this_textblock_selector = $(this).attr('id')
+            if (this_textblock_selector.indexOf('x') == -1){ // there isn't an x in the side we're currently on
+                var other_side = 'left'
+            } else{
+                var other_side = 'right'
+            }
+
+            // update the current node.
+            // var our_html = $(this).attr('html-all')
+            $(this).addClass('shaded')//.html('<span class="textblock_span">' + our_html + '</span>')
+
+            // update all the nodes on the other side as this node.
+            var node_arcs = get_arcs(this)
+            node_arcs.forEach(function(d){
+                // shade the arc itself
+                $('.' + d).addClass('shaded')
+                // get other textblock and the html that it should update to.
+                var other_textblock = $('.' + d).attr(other_side)
+                // var other_new_html = $('.' + d).attr('hidden-html-' + other_side)
+                // shade the other textblock that the arc connects
+                $('#' + other_textblock).addClass('shaded')//.html(other_new_html)
+            })
+        })
+        .on('mouseout', function(d) {
+            $('.connection').removeClass('shaded')
+            $('.textblock').removeClass('shaded')
+            // $('.textblock').each(function (i, d) {
+            //     var orig_html = $(d).attr('orig-html')
+            //     $(d).html(orig_html)
+            // })
+        })
+
+    //
+    // mturk
+    //
+    // handle data
+    //
+    class SubmitHandler{
+        constructor() {
+            turkSetAssignmentID();
+            this.GENERIC_THANKS_MESSAGE = 'Thank you so much for your help with our task!'
+        }
+
+        _format_data(d, question_class){
+            if (question_class == 'connections removed'){
+                var orig_line = data.arcs.filter(function(c){ return c.line_selector == d})[0]
+                return {
+                    "doc_id": "('nyt', 548087, 2, 3)",
+                    "question_class": question_class,
+                    "sent_idx_x": orig_line['sent_idx_x'],
+                    "sent_idx_y": orig_line['sent_idx_y'],
+                    'version_x': x_vers,
+                    'version_y': y_vers,
+                }
+            }
+            else {
+                return {
+                    "doc_id": "('nyt', 548087, 2, 3)",
+                    "question_class": question_class,
+                    "sent_idx_x": $('.' + d).attr('left').split('-')[2],
+                    "sent_idx_y": $('.' + d).attr('right').split('-')[2],
+                    'version_x': x_vers,
+                    'version_y': y_vers,
+                }
+            }
+        }
+
+        get_data_from_dom() {
+            var that = this
+            this.output = {
+                'doc_id': "('nyt', 548087, 2, 3)",
+                'connections_removed': [],
+                'connections_added': [],
+                'connections_final': [],
+            }
+
+            // get data from the dom
+            var lines_at_start = []
+            data.arcs.forEach(function (d) {
+                if ((d.sent_idx_x != null) && (d.sent_idx_y != null)) {
+                    lines_at_start.push( d.line_selector)
+                }
+            })
+            var lines_at_end = []
+            $('.connection').each(function (i, d) {
+                lines_at_end.push(
+                    $(d).attr('class')
+                        .split(/\s+/)
+                        .filter(function (d) {
+                            return d.indexOf('line') != -1
+                        })[0]
+                )
+            })
+
+            var lines_removed = lines_at_start.filter(function (x, i) {
+                return lines_at_end.indexOf(x) < 0
+            })
+            var lines_added = lines_at_end.filter(function (x, i) {
+                return lines_at_start.indexOf(x) < 0
+            })
+
+            // put in this class
+            lines_removed.forEach(function(d){
+                that.output['connections_removed'].push(that._format_data(d, 'connections removed'))
+            })
+            lines_added.forEach(function(d){
+                that.output['connections_added'].push(that._format_data(d, 'connections added'))
+            })
+            lines_at_end.forEach(function(d){
+                that.output['connections_final'].push(that._format_data(d, 'connections final'))
+            })
+            this.num_lines_added = lines_added.length
+            this.num_lines_removed = lines_removed.length
+            this.output['num_connections_added'] = this.num_lines_added
+            this.output['num_connections_removed'] = this.num_lines_removed
+        }
+
+        gather_and_submit_data(submit_button, submit_click_event) {
+            this.submit_button = submit_button
+            this.submit_click_event = submit_click_event
+            this.get_data_from_dom()
+            this.first_confirm() // -> second_confirm -> third_confirm -> submit_data
+        }
+
+        first_confirm(){
+            var that = this
+            // First question
+            alertify.confirm(
+                    "You\'ve added " + this.num_lines_added + " lines and removed " + this.num_lines_removed + ". Is this correct?",
+            ).set('header', '<em>Checking number of connections drawn/removed...</em>')
+             .set('labels', {
+                        ok: "Continue, submit!",
+                        cancel: "Let me recheck..."
+                    })
+                 .set('onok', function () {
+                        that.second_confirm()
+                    })
+                 .set('oncancel', function() {
+                        alertify.error('Thanks for being diligent! Please recheck and resubmit!')
+                    })
+        }
+
+        second_confirm(){
+            var that = this
+            setTimeout(function() {
+                var word_diff_ratios = $('.connection').map(function (i, d) {
+                    return $(d).attr('word-diff-ratio')
+                })
+                var low_ratios = word_diff_ratios.filter(function (i, d) {return d < .2})
+                // Second Question.
+                if (low_ratios.length > 0) {
+                    alertify.confirm(
+                        /* message */ low_ratios.length + " connections have very low word-overlap. Are you sure they are correct?",
+                    )
+                        .set('header', '<em>Checking all word overlaps...</em>')
+                        .set('labels', {
+                            ok: "Continue, submit!",
+                            cancel: "Let me recheck..."
+                        })
+                        .set('onok', function () {
+                            that.third_confirm()
+                        })
+                        .set('oncancel', function () {
+                            alertify.error('Thanks for being diligent! Please recheck and resubmit!')
+                        })
+                        // .set('onclose', function () { });
+                 // otherwise, skip straight to the final confirm
+                } else {
+                    that.third_confirm()
+                }
+            }, 700)
+        }
+
+        third_confirm(){
+            var that = this
+            setTimeout(function() {
+                alertify.confirm(
+                    "Great! Your submission is valid. Do you want to recheck your answers?"
+                ).set('header', '<em>Looks good! Ready to Submit?</em>')
+                    .set('labels', {
+                        ok: "Continue, submit!",
+                        cancel: "Let me recheck..."
+                    })
+                    .set('onok', function () {
+                        alertify.success('Ok! Submitting...')
+                        alertify.success(that.GENERIC_THANKS_MESSAGE)
+                        that.submit_data()
+                    })
+                    .set('oncancel', function () {
+                        alertify.error('Thanks for being diligent! Please recheck and resubmit!')
+                    })
+            }, 700)
+        }
+        submit_data(){
+            
+            // submit AJAX
+            this.output['start_time'] = "2023-10-08 16:06:47.876029"
+            $.ajax({
+                url: "/post_task",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(this.output),
+                success: function (result) {
+                    if (result === "success") location.href = "/view_task"
+                }
+            })
+            
+        }
+    }
+
+    // submit button click
+    var clicked=false
+    $('#submitButton').on('click', function(submit_click_event){
+        var sh = new SubmitHandler()
+        var submit_button = this
+        submit_click_event.preventDefault();
+        sh.gather_and_submit_data(submit_button, submit_click_event);
+    })
+
+</script>
+</body>
+</html>
